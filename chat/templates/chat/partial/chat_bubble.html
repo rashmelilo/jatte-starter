@@ -1,0 +1,22 @@
+{% load static %}
+
+<div id="chat"
+    style="width: 50px; height: 50px; position: fixed; bottom: 2rem; right: 2rem; padding: 0.5rem; background-color: none; border: none; border-radius: 0.75rem;">
+    <div id="chat_icon">
+        <button id="chat_open" class="w-[80px] flex items-center">
+            <img src="{% static 'images/chatbot.gif' %}" alt="Chat Icon">
+        </button>
+    </div>
+    <div id="chat_welcome" class="hidden fixed bottom-0 right-0 z-50 p-4 bg-white rounded-t-lg shadow-lg border border-gray-300">
+        <input type="text" name="name" id="chat_name" class="w-40 md:w-full mb-4 py-2 px-4 md:px-6 rounded-xl bg-gray-200 focus:bg-gray-300" placeholder="Enter a name...">
+        <button id="chat_join" class="w-full md:w-100 py-2 px-4 md:px-6 rounded-xl bg-teal-600 text-white">Join Chat</button>
+    </div>
+    
+    <div id="chat_room" class="hidden fixed bottom-0 right-0 z-50 p-4 bg-white rounded-lg shadow-lg w-80">
+        <div id="chat_log" class="mb-4 p-4 max-h-64 overflow-y-auto bg-gray-100 rounded-xl">
+            <p>Welcome to our chat! Please type your message and wait for an agent to join...</p>
+        </div>
+        <input type="text" name="message" id="chat_message_input" class="w-full mb-4 p-4 rounded-xl bg-gray-100" placeholder="Type your message...">
+        <button id="chat_message_submit" class="py-2 px-6 rounded-xl bg-teal-600 text-white">Send</button>
+    </div>
+</div>
