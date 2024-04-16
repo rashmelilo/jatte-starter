@@ -15,55 +15,78 @@ const chatSubmitElement = document.querySelector("#chat_message_submit");
 /**
  * functions
  */
+function scrollToBottom() {
+  chatLogElement.scrollTop = chatLogElement.scrollHeight;
+  
+}
 function sendMessage() {
-    chatSocket.send(
-      JSON.stringify({
-        type: "chat_message",
+    chatSocket.send(JSON.stringify({
+        type: "message",
         message: chatInputElement.value,
         name: document.querySelector("#user_name").textContent.replaceAll('"', ''),
         agent: document.querySelector("#user_id").textContent.replaceAll('"', ''),
-      })
-    );
+      }))
+    
     chatInputElement.value = "";
   }
 
+// 
 function onChatMessage(data) {
-    console.log("onChatMessage", data);
-    if (data.type === "chat_message") {
-      console.log("Processing chat message...");
-      if (!data.agent) {
-        // If the message is not from an agent, append it to the chat log
-        chatLogElement.innerHTML += `
-             <div class="flex">
-             <span class="inline-block rounded-full bg-gray-300 text-white w-8 h-8 flex items-center justify-center ml-2">${data.initials}</span>
-             <div class="bg-blue-300 p-3 rounded-l-lg rounded-br-lg">
-             <p class="text-sm">${data.message}</p>
-             </div>
-                  </div>
-                  <span class="text-xs text-gray-500 leading-none">${data.created_at} ago</span><br>
-             `;
-        console.log(
-          "Message from user:",
-          data.message,
-          "user initials:",
-          data.initials
-        );
-      } else {
-        // If the message is from an agent, append it with additional details
-        const { message, name, initials } = data;
-        chatLogElement.innerHTML += `
-              <div class="flex">
-              <span class="inline-block rounded-full bg-gray-300 text-white w-8 h-8 flex items-center justify-center ml-2">${data.initials}</span>
-              <div class="bg-gray-300 p-3 rounded-l-lg rounded-br-lg">
-              <p class="text-sm">${data.message}</p>
-              </div>
-                 </div>
-                 <span class="text-xs text-gray-500 leading-none">${data.created_at} ago</span><br>
-              `;
-        console.log("Message from agent:", message);
+  console.log("onChatMessage", data)
+  if (data.type == 'chat_message') {
+          let tmpInfo = document.querySelector('.tmp-info')
+          if (tmpInfo) {
+            tmpInfo.remove()
+          }
+      if(!data.agent)
+      {
+        chatLogElement.innerHTML+=`
+        <div class="flex w-full mt-2 space-x-3 max-w-md">
+            <div class="flex-shrink-0 h-10 w-10 rounded-full bg-gray-100 text-center pt-2">${data.initials}</div>
+            <div>
+                <div class="bg-gray-300 p-3 rounded-l-lg rounded-br-lg">
+                <p class="text-sm">${data.message}</p>
+                </div>
+                <span class="text-xs text-gray-500 leading-none">${data.created_at} ago</span>
+            </div>  
+        </div>`
+      }else{
+        chatLogElement.innerHTML +=`
+        <div class="flex w-full mt-2 space-x-3 max-w-md ml-auto justify-end">
+            <div>
+                <div class="bg-blue-600 p-3 rounded-r-lg rounded-bl-lg">
+                  <p class="text-sm">${data.message}</p>
+                </div>
+                <span class="text-xs text-gray-500 leading-none">${data.created_at} ago</span>
+            </div>
+            <div class="flex-shrink-0 h-10 w-10 rounded-full bg-gray-100 text-center pt-2">${data.initials}</div>
+        </div>`
       }
+
+}else if (data.type == 'writing_active') {
+  if (!data.agent){
+    let tmpInfo = document.querySelector('.tmp-info')
+    if (tmpInfo) {
+      tmpInfo.remove()
     }
+    chatLogElement.innerHTML+=`
+        <div class="tmp-info flex w-full mt-2 space-x-3 max-w-md">
+            <div class="flex-shrink-0 h-10 w-10 rounded-full bg-gray-100 text-center pt-2">${data.initials}</div>
+            <div>
+                <div class="bg-gray-300 p-3 rounded-l-lg rounded-br-lg">
+                <p class="text-sm">The user is typing a message...</p>
+                </div>
+                <span class="text-xs text-gray-500 leading-none">${data.created_at} ago</span>
+            </div>  
+        </div>`
+   
   }
+
+ } 
+
+scrollToBottom()
+
+}
 
 /**
  * Web Socket
@@ -78,6 +101,7 @@ chatSocket.onmessage = function(e){
 
 chatSocket.onopen = function(e){
     console.log('on open')
+    scrollToBottom()
 }
 chatSocket.onclose = function(e){
     console.log('chat socket closed unexpectedly')
@@ -88,6 +112,7 @@ chatSocket.onclose = function(e){
 chatSubmitElement.onclick = function (e) {
     e.preventDefault()
     sendMessage()
+    return false
   }
   
 chatInputElement.onkeyup = function (e) {
@@ -98,14 +123,10 @@ chatInputElement.onkeyup = function (e) {
 }
 
 chatInputElement.onfocus = function (e) {
-  chatSocket.send(JSON.stirngify)({
-    type: "update",
-    message: "writing_active",
-    name: document.querySelector("#user_name").textContent.replaceAll('"', ''),
-    agent: document.querySelector("#user_id").textContent.replaceAll('"', ''),
-
-
-
-    
-  })
+  chatSocket.send(JSON.stringify({
+    'type' : "update",
+    'message': "writing_active",
+    'name': document.querySelector("#user_name").textContent.replaceAll('"', ''),
+    'agent': document.querySelector("#user_id").textContent.replaceAll('"', ''),
+  }))
 }

@@ -25,13 +25,16 @@ const chatSubmitElement = document.querySelector("#chat_message_submit");
 /**
  * funtions
  */
-function getCookie(name) {
+function scrollToBottom() {
+  chatLogElement.scrollTop = chatLogElement.scrollHeight;
+  
+}
+ function getCookie(name) {
   var cookieValue = null;
   if (document.cookie && document.cookie !== "") {
     var cookies = document.cookie.split(";");
     for (var i = 0; i < cookies.length; i++) {
       var cookie = cookies[i].trim();
-      // Does this cookie string begin with the name we want?
       if (cookie.substring(0, name.length + 1) === name + "=") {
         cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
         break;
@@ -41,8 +44,7 @@ function getCookie(name) {
   return cookieValue;
 }
 function sendMessage() {
-  chatSocket.send(
-    JSON.stringify({
+  chatSocket.send(JSON.stringify({
       type: "message",
       message: chatInputElement.value,
       name: chatName,
@@ -56,22 +58,20 @@ function onChatMessage(data) {
 
   const messageTemplate = `
     <div class="flex ${!data.agent ? "flex-row-reverse" : ""}">
-      <span class="inline-block rounded-full bg-gray-300 text-white w-8 h-8 flex items-center justify-center ml-2">${
-        data.initials
-      }</span>
-      <div class="bg-${
-        !data.agent ? "blue" : "gray"
-      }-300 p-3 rounded-l-lg rounded-br-lg">
-        <p class="text-sm">${data.message}</p>
+      <span class="inline-block rounded-full bg-gray-300 text-white w-8 h-8 flex items-center justify-center ml-2">${data.initials}</span>
+      <div>
+        <div class="bg-${!data.agent ? "blue" : "gray"}-300 p-3 rounded-l-lg rounded-br-lg">
+          <p class="text-sm">${data.message}</p>
+        </div>
+        <span class="text-xs text-gray-500 leading-none mt-2 justify-end">${data.created_at} ago </span>
       </div>
     </div>
-    <span class="text-xs text-gray-500 leading-none mt-2 justify-end">${
-      data.created_at
-    } ago</span><br>
   `;
 
   if (data.type === "chat_message") {
     console.log("Processing chat message...");
+    // Remove the "agent is typing" message before appending the new message
+    removeAgentTypingMessage();
     chatLogElement.innerHTML += messageTemplate;
     console.log(
       data.agent ? "Message from agent:" : "Message from user:",
@@ -80,12 +80,33 @@ function onChatMessage(data) {
       data.initials
     );
   } else if (data.type === "users_update") {
-    chatLogElement.innerHTML +=
-      '<p class="mt-2">The admin/agent has joined the chat</p>';
+    chatLogElement.innerHTML += '<p class="mt-2">The admin/agent has joined the chat</p>';
+  } else if (data.type === 'writing_active' && data.agent) {
+    console.log("Agent is typing...");
+    // Remove the existing "agent is typing" message before adding a new one
+    removeAgentTypingMessage();
+    chatLogElement.innerHTML += `
+      <div class="tmp-info flex w-full mt-2 space-x-3 max-w-md">
+        <div class="flex-shrink-0 h-10 w-10 rounded-full bg-gray-100 text-center pt-2">${data.initials}</div>
+        <div>
+          <div class="bg-gray-300 p-3 rounded-l-lg rounded-br-lg">
+            <p class="text-sm">The agent is typing a message...</p>
+          </div>
+        </div>
+      </div>`;
   }
 
   scrollToBottom();
 }
+
+// Function to remove the "agent is typing" message
+function removeAgentTypingMessage() {
+  const tmpInfo = document.querySelector('.tmp-info');
+  if (tmpInfo) {
+    tmpInfo.remove();
+  }
+}
+
 
 function scrollToBottom(elementId) {
   var element = document.getElementById(elementId);
@@ -123,11 +144,13 @@ async function joinChatRoom() {
   );
   chatSocket.onmessage = function (e) {
     console.log("WebSocket message received:", e.data);
-    onChatMessage(JSON.parse(e.data));
+    onChatMessage(JSON.parse(e.data))
+    
   };
 
   chatSocket.onopen = function (e) {
     console.log("onopen - chat socket was opened");
+    scrollToBottom();
   };
 
   chatSocket.onclose = function (e) {
@@ -154,14 +177,23 @@ chatJoinElement.onclick = function (e) {
   joinChatRoom();
 
   return false;
-};
+}
 chatSubmitElement.onclick = function (e) {
-  e.preventDefault();
-  sendMessage();
-};
+  e.preventDefault()
+  sendMessage()
+  return CSSFontFeatureValuesRule
+}
 chatInputElement.onkeyup = function (e) {
   if (e.keyCode === 13) {
     e.preventDefault();
     sendMessage();
   }
-};
+}
+chatInputElement.onfocus = function (e) {
+  chatSocket.send(JSON.stringify({
+    'type' : "update",
+    'message': "writing_active",
+    'name':  chatName,
+    
+  }))
+}

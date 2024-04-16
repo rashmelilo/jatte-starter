@@ -1,10 +1,10 @@
 {% load static %}
 
 <div id="chat"
-    style="width: 50px; height: 50px; position: fixed; bottom: 2rem; right: 2rem; padding: 0.5rem; background-color: none; border: none; border-radius: 0.75rem;">
+    style="width: 50px; height: 50px; position: fixed; bottom: 1rem; right: 1rem; padding: 0.5rem; background-color: none; border: none; border-radius: 0.75rem;">
     <div id="chat_icon">
-        <button id="chat_open" class="w-[80px] flex items-center">
-            <img src="{% static 'images/chatbot.gif' %}" alt="Chat Icon">
+        <button id="chat_open" class="flex items-center" style="border-radius: 50%; padding: 0.5rem; width: 120px; position: absolute; bottom: 0px; right: 0px; box-shadow: 8px 8px 14px 16px rgba(0,0,0,0.1);">
+            <img src="{% static 'images/chatbot.gif' %}" alt="Chat Icon" style="border-radius: 50%;">
         </button>
     </div>
     <div id="chat_welcome" class="hidden fixed bottom-0 right-0 z-50 p-4 bg-white rounded-t-lg shadow-lg border border-gray-300">

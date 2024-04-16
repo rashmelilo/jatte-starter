@@ -10,7 +10,7 @@ from account.models import User
 class ChatConsumer(AsyncWebsocketConsumer):
     async def connect(self):
         self.room_name = self.scope["url_route"]["kwargs"]["room_name"]
-        self.room_group_name = f"chatself_{self.room_name}"
+        self.room_group_name = f"chat_{self.room_name}"
         self.user = self.scope["user"]
 
         await self.get_room()
@@ -32,37 +32,41 @@ class ChatConsumer(AsyncWebsocketConsumer):
 
 
     async def receive(self, text_data):
-        text_data_json = json.loads(text_data)
-        type = text_data_json["type"]
-        message = text_data_json["message"]
-        name = text_data_json["name"]
-        agent = text_data_json.get("agent", '')
+        try:
+            text_data_json = json.loads(text_data)
+            type = text_data_json['type']
+            message = text_data_json['message']
+            name = text_data_json['name']
+            agent = text_data_json.get("agent", '')
 
-        print('Receive', type)
-        if type == "message":
-            new_message = await self.create_message(name, message, agent)
-            await self.channel_layer.group_send(
-                self.room_group_name, 
-                {"type": "chat_message", 
-                "message": message, 
-                "name": name, 
-                "agent": agent, 
-                "initials": initials(name),
-                "created_at": timesince(new_message.created_at)}
-            )
+            print('Receive', type)
+            if type == "message":
+                    new_message = await self.create_message(name, message, agent)
+                    await self.channel_layer.group_send(
+                        self.room_group_name, 
+                        {"type": "chat_message", 
+                        "message": message, 
+                        "name": name, 
+                        "agent": agent, 
+                        "initials": initials(name),
+                        "created_at": timesince(new_message.created_at)}
+                    )
 
-        elif type=="update":
-            await self.channel_layer.group_send(
-                self.room_group_name, 
-                {"type": "writing_active",
-                 "message": message, 
-                "name": name, 
-                "agent": agent, 
-                "initials": initials(name),
-                 
-                 
-                 }
-            )        
+            elif type == "update":
+                    print('is update')
+                    await self.channel_layer.group_send(
+                        self.room_group_name, 
+                        {"type": "writing_active",
+                        "message": message, 
+                        "name": name, 
+                        "agent": agent, 
+                        "initials": initials(name)}
+                    )
+            else:
+                print("Incomplete or invalid JSON data received")
+        except json.JSONDecodeError as e:
+            print(f"Error decoding JSON: {e}")
+
 
 
     async def chat_message(self, event):
@@ -91,16 +95,15 @@ class ChatConsumer(AsyncWebsocketConsumer):
             "agent": event['agent'],
             "initials": event['initials'],
             
-
-            
-            
-            
-            
-            }))
+              }))
     
 
     async def users_update(self, event):
-        await self.send(text_data=json.dumps({"type": "users_update"}))
+        # Assuming this key signifies an agent joining
+            await self.send(text_data=json.dumps({
+                 "type": "users_update"
+                 
+                 }))
     
     @sync_to_async
     def get_room(self):
@@ -109,6 +112,7 @@ class ChatConsumer(AsyncWebsocketConsumer):
     @sync_to_async
     def set_room_closed(self):
         self.room = Room.objects.get(uuid=self.room_name)
+    
         self.room.status = Room.CLOSED
         self.room.save()    
 

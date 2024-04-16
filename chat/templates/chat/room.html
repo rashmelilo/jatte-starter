@@ -18,7 +18,7 @@
     {% for message in room.messages.all %}
     <div class="flex w-full max-w-md mt-2 space-x-3 {% if message.created_by %}ml-auto justify-end{% endif %}">
         {% if not message.created_by %}
-        <div class="flex-shrink-0 h-10 w-10 rounded-full bg-gray-100 text-center pt-2">
+        <div class="flex-shrink-0 h-10 w-10 rounded-full bg-gray-200 text-center pt-2">
             {{ message.body|initials }}
         </div>
         {% endif %}
@@ -30,10 +30,9 @@
             <span class="text-xs text-gray-500 leading-none">{{ message.created_at|timesince }} ago</span>
         </div>
         {% if message.created_by %}
-        <div class="flex rounded-xl px-10 bg-blue-600 place-items-center text-white justify-center">
-            {{ message.sent_by }} 
+        <div class="flex shrink-0 h-10 w-10 rounded-full bg-gray-200 text-center pt-2">
+            {{ message.sent_by|initials }} 
         </div>
-        <span class="ms-3 text-black">{{ message.body|initials }}</span>
         {% endif %}
     </div>
     {% endfor %}

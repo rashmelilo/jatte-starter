@@ -62,12 +62,6 @@ def delete_room(request, uuid):
         messages.error(request, 'You do not have access to delete rooms!')
         return redirect('/chat-admin/')
 
-
-
-
-
-
-
 @login_required
 def user_detail(request, uuid):
     user = User.objects.get(pk=uuid)
