@@ -129,4 +129,21 @@ class ChatConsumer(AsyncWebsocketConsumer):
         
         return message
     
-    
+class NotificationConsumer(AsyncWebsocketConsumer):
+    async def connect(self):
+        self.user = self.scope["user"]
+        if self.user.is_authenticated:
+            await self.accept()
+        else:
+            await self.close()
+
+    async def disconnect(self, close_code):
+        pass  # Disconnect logic if needed
+
+    async def receive(self, text_data):
+        # Handle incoming notifications
+        pass
+
+    async def send_notification(self, event):
+        # Send notification to the client
+        pass    

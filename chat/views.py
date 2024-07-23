@@ -10,6 +10,9 @@ from django.utils.text import slugify
 from account.forms import AddUserForm, EditUserForm
 from django.contrib import messages
 from django.contrib.auth.models import Group
+import requests
+from django.http import HttpResponse
+from django.views.decorators.csrf import csrf_exempt
 
 
 @require_POST
@@ -122,3 +125,34 @@ def add_user(request):
         messages.error(request, 'You do not have permission to add users!')
 
         return redirect('/chat-admin/')  
+    
+VERIFY_TOKEN = 'HWSSchat_secure_verify_token_123456'
+PAGE_ACCESS_TOKEN = 'EAAU0uzcOcQkBO5hQrCezadtGhxw5YL7ZBZCbJmVeyu0nQexQcfDBpy5Qsrz0olKspb25UEglWWs0yjCl7pPc0MjLKfMasTK43MGBhvGK7JZBbvBxrTvwsrnfWCQY6UqhFxefDMacSj2ZB677vKlFfqLYLsHmmIzEsaZAZCFwWbKWIORMEfj9sqsJJrLMOwAZAmUZABfnEJrUsM8XrC0ZD'  # Your Page Access Token
+
+@csrf_exempt
+def webhook(request):
+    if request.method == 'GET':
+        if request.GET.get('hub.verify_token') == VERIFY_TOKEN:
+            return HttpResponse(request.GET.get('hub.challenge'))
+        else:
+            return HttpResponse('Error, invalid token')
+    elif request.method == 'POST':
+        payload = json.loads(request.body.decode('utf-8'))
+        for event in payload['entry']:
+            messaging = event['messaging']
+            for message in messaging:
+                if message.get('message'):
+                    sender_id = message['sender']['id']
+                    message_text = message['message']['text']
+                    send_message(sender_id, message_text)
+        return HttpResponse('Event received')
+
+def send_message(recipient_id, message_text):
+    url = f'https://graph.facebook.com/v13.0/me/messages?access_token={PAGE_ACCESS_TOKEN}'
+    headers = {'Content-Type': 'application/json'}
+    payload = {
+        'recipient': {'id': recipient_id},
+        'message': {'text': message_text},
+    }
+    response = requests.post(url, headers=headers, json=payload)
+    return response.json()
