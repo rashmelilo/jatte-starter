@@ -1,6 +1,7 @@
 from django.urls import path
 from . import views
 
+
 app_name = 'chat'
 
 
@@ -12,5 +13,6 @@ urlpatterns = [
     path('chat-admin/users/<uuid:uuid>/edit/', views.edit_user, name='edit_user'),
     path('chat-admin/<str:uuid>/', views.room, name='room'),
     path('chat-admin/<str:uuid>/delete', views.delete_room, name='delete_room'),
+    
     
 ]

@@ -1,10 +1,14 @@
 {% extends 'core/base.html' %}
 
 {% block content %}
-<h1 class="mb-6 text-2xl">Edit User</h1>
-<form method="post" action=".">
-    {% csrf_token %}
-    {{ form.as_p }}
-    <button class="mt-6 inline-block py-2 px-6 bg-green-800 text-white rounded-xl">Save Changes</button>
-</form>
+<div class="max-w-lg mx-auto bg-white p-8 shadow-lg rounded-lg">
+    <h1 class="text-2xl font-bold mb-6 text-gray-800">Edit User</h1>
+    <form method="post" action=".">
+        {% csrf_token %}
+        {{ form.as_p }}
+        <button class="w-full mt-6 py-2 px-4 bg-green-600 hover:bg-green-700 text-white font-semibold rounded-lg transition duration-300 ease-in-out">
+            Save Changes
+        </button>
+    </form>
+</div>
 {% endblock %}

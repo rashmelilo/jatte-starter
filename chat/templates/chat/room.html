@@ -1,49 +1,82 @@
 {% extends 'core/base.html' %}
-
 {% load static chatextras %}
 
 {% block content %}
-<h1 class="text-2xl">Room "{{ room.uuid }}"</h1>
+<div class="container mx-auto px-4 py-8">
+    <h1 class="text-3xl font-bold text-gray-800 mb-6">Room "{{ room.uuid }}"</h1>
 
-<hr class="my-6">
-<p class="mb-6">
-    <b>Name:</b> {{ room.client }}<br>
-    <b>Started:</b> {{ room.created_at|timesince }} ago<br>
-    <b>Status:</b> {{ room.get_status_display }}<br>
-    <b>Page:</b> {{ room.urls }}<br>
-    <b>Agent:</b> {% firstof room.agent.name 'None yet...' %}
-</p>
-<hr class="mb-6">
-<div id="chat_log" class="mb-4 p-4 bg-gray-100 rounded-xl h-[300px] overflow-scroll flex flex-col flex-grow">
-    {% for message in room.messages.all %}
-    <div class="flex w-full max-w-md mt-2 space-x-3 {% if message.created_by %}ml-auto justify-end{% endif %}">
-        {% if not message.created_by %}
-        <div class="flex-shrink-0 h-10 w-10 rounded-full bg-gray-200 text-center pt-2">
-            {{ message.body|initials }}
-        </div>
-        {% endif %}
-        <div>
-            <div
-                class="p-4 rounded-xl {% if message.created_by %}bg-blue-600 text-white{% else %}bg-gray-300{% endif %}">
-                <p class="text-sm">{{ message.sent_by }}</p>
+    <div class="bg-white shadow-lg rounded-lg overflow-hidden mb-8">
+        <div class="p-6">
+            <h2 class="text-xl font-semibold text-gray-700 mb-4">Room Details</h2>
+            <div class="grid grid-cols-2 gap-4">
+                <div>
+                    <p class="text-sm text-gray-600">Name</p>
+                    <p class="font-medium">{{ room.client }}</p>
+                </div>
+                <div>
+                    <p class="text-sm text-gray-600">Started</p>
+                    <p class="font-medium">{{ room.created_at|timesince }} ago</p>
+                </div>
+                <div>
+                    <p class="text-sm text-gray-600">Status</p>
+                    <p class="font-medium">
+                        <span class="px-2 py-1 text-xs font-semibold rounded-full 
+                        {% if room.status == 'active' %}bg-green-200 text-green-800
+                        {% elif room.status == 'closed' %}bg-red-200 text-red-800
+                        {% else %}bg-yellow-200 text-yellow-800{% endif %}">
+                            {{ room.get_status_display }}
+                        </span>
+                    </p>
+                </div>
+                <div>
+                    <p class="text-sm text-gray-600">Page</p>
+                    <p class="font-medium">{{ room.urls }}</p>
+                </div>
+                <div>
+                    <p class="text-sm text-gray-600">Agent</p>
+                    <p class="font-medium">{% firstof room.agent.name 'None yet...' %}</p>
+                </div>
             </div>
-            <span class="text-xs text-gray-500 leading-none">{{ message.created_at|timesince }} ago</span>
         </div>
-        {% if message.created_by %}
-        <div class="flex-shrink-0 h-10 w-10 rounded-full bg-gray-200 text-center pt-2">
-            {{ message.sent_by|initials }} 
-        </div>
-        {% endif %}
     </div>
-    {% endfor %}
+
+    <div class="bg-white shadow-lg rounded-lg overflow-hidden">
+        <div class="p-6">
+            <h2 class="text-xl font-semibold text-gray-700 mb-4">Chat</h2>
+            <div id="chat_log" class="h-96 overflow-y-auto mb-6 space-y-4">
+                {% for message in room.messages.all %}
+                <div class="flex {% if message.created_by %}justify-end{% endif %}">
+                    <div class="max-w-md">
+                        <div class="flex items-end {% if not message.created_by %}flex-row-reverse{% endif %}">
+                            <div class="flex-shrink-0 h-8 w-8 rounded-full bg-gray-300 flex items-center justify-center text-sm font-medium text-gray-700 mr-2">
+                                {{ message.sent_by|initials }}
+                            </div>
+                            <div class="rounded-lg px-4 py-2 {% if message.created_by %}bg-blue-500 text-white{% else %}bg-gray-200 text-gray-700{% endif %}">
+                                <p class="text-sm">{{ message.body }}</p>
+                            </div>
+                        </div>
+                        <p class="text-xs text-gray-500 mt-1 {% if message.created_by %}text-right{% endif %}">
+                            {{ message.created_at|timesince }} ago
+                        </p>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+
+            {% if room.status == 'active' %}
+            <div class="mt-4">
+                <input type="text" name="message" id="chat_message_input" 
+                    class="w-full p-3 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    placeholder="Type your message...">
+                <button id="chat_message_submit" 
+                    class="mt-2 w-full bg-blue-500 hover:bg-blue-600 text-white font-semibold py-2 px-4 rounded-lg transition duration-300">
+                    Send
+                </button>
+            </div>
+            {% endif %}
+        </div>
+    </div>
 </div>
-
-{% if room.status == 'active' %}
-<input type="text" name="message" id="chat_message_input" class="w-full mb-4 p-4 rounded-xl bg-gray-100"
-    placeholder="Type your message...">
-<button id="chat_message_submit" class="py-2 px-6 rounded-xl bg-teal-600 text-white">Send</button>
-{% endif %}
-
 {% endblock %}
 
 {% block scripts %}

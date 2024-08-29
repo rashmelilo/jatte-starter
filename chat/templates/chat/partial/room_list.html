@@ -1,22 +1,32 @@
-<div class="grid grid-cols-4 gap-4">
-        {% for room in rooms %}
-        <div class="p-4 rounded-xl 
-            {% if room.status == 'waiting' %}
-                bg-yellow-100
-            {% elif room.status == 'active' %}
-                bg-green-100
-            {% else %}
-                bg-gray-100
-            {% endif %}">
-            <h3 class="mb-4 text-lg">Chat</h3>
-            <p>
-                <b>ID:</b>{{ room.uuid}}
-                <b>Name:</b>{{ room.client }}<br>
-                <b>Status:</b>{{ room.status }}<br>
-                <b>Agent:</b>{% firstof room.agent.name 'None yet...' %}
-            </p>
-            <a href="{% url 'chat:room' room.uuid %}" class="mt-4 inline-block py-2 px-6 bg-emerald-800 text-white rounded-xl">Join</a>
-            <a href ="{% url 'chat:delete_room' room.uuid %}" class="mt-4 inline-block py-2 px-6 bg-rose-800 text-white rounded-xl">Delete</a>
-        </div> 
-        {% endfor %}
+<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+    {% for room in rooms %}
+    <div class="bg-green-100 rounded-lg shadow-md overflow-hidden">
+        <div class="p-6">
+            <div class="flex justify-between items-center mb-4">
+                <h3 class="text-lg font-semibold text-gray-800">Chat Room</h3>
+                <span class="px-2 py-1 text-xs font-medium rounded-full 
+                    {% if room.status == 'waiting' %}bg-yellow-200 text-yellow-800
+                    {% elif room.status == 'active' %}bg-blue-200 text-blue-800
+                    {% else %}bg-gray-200 text-gray-800{% endif %}">
+                    {{ room.status|capfirst }}
+                </span>
+            </div>
+            <div class="space-y-2">
+                <p class="text-sm"><span class="font-medium">ID:</span> {{ room.uuid }}</p>
+                <p class="text-sm"><span class="font-medium">Name:</span> {{ room.client }}</p>
+                <p class="text-sm"><span class="font-medium">Agent:</span> {% firstof room.agent.name 'None yet...' %}</p>
+            </div>
+            <div class="mt-6 flex space-x-2">
+                <a href="{% url 'chat:room' room.uuid %}" 
+                   class="flex-1 py-2 px-4 bg-emerald-600 hover:bg-emerald-700 text-white text-center font-medium rounded-lg transition duration-300">
+                    Join
+                </a>
+                <a href="{% url 'chat:delete_room' room.uuid %}" 
+                   class="flex-1 py-2 px-4 bg-rose-600 hover:bg-rose-700 text-white text-center font-medium rounded-lg transition duration-300">
+                    Delete
+                </a>
+            </div>
+        </div>
     </div>
+    {% endfor %}
+</div>
