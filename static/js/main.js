@@ -3,7 +3,7 @@
  */
 let chatName = "";
 let chatSocket = null;
-const chatWindowUrl = window.location.href; 
+const chatWindowUrl = window.location.href;
 let chatRoomUuid = Math.random().toString(36).slice(2, 12);
 
 console.log("chatRoomUuid", chatRoomUuid);
@@ -23,13 +23,13 @@ const chatInputElement = document.querySelector("#chat_message_input");
 const chatSubmitElement = document.querySelector("#chat_message_submit");
 
 /**
- * funtions
+ * functions
  */
 function scrollToBottom() {
   chatLogElement.scrollTop = chatLogElement.scrollHeight;
-  
 }
- function getCookie(name) {
+
+function getCookie(name) {
   var cookieValue = null;
   if (document.cookie && document.cookie !== "") {
     var cookies = document.cookie.split(";");
@@ -43,8 +43,10 @@ function scrollToBottom() {
   }
   return cookieValue;
 }
+
 function sendMessage() {
-  chatSocket.send(JSON.stringify({
+  chatSocket.send(
+    JSON.stringify({
       type: "message",
       message: chatInputElement.value,
       name: chatName,
@@ -80,8 +82,11 @@ function onChatMessage(data) {
       data.initials
     );
   } else if (data.type === "users_update") {
-    chatLogElement.innerHTML += '<p class="mt-2">The admin/agent has joined the chat</p>';
-  } else if (data.type === 'writing_active' && data.agent) {
+    // Check if the joining user is an agent
+    if (data.agent) {
+      chatLogElement.innerHTML += '<p class="mt-2">The admin/agent has joined the chat</p>';
+    }
+  } else if (data.type === "writing_active" && data.agent) {
     console.log("Agent is typing...");
     // Remove the existing "agent is typing" message before adding a new one
     removeAgentTypingMessage();
@@ -101,12 +106,11 @@ function onChatMessage(data) {
 
 // Function to remove the "agent is typing" message
 function removeAgentTypingMessage() {
-  const tmpInfo = document.querySelector('.tmp-info');
+  const tmpInfo = document.querySelector(".tmp-info");
   if (tmpInfo) {
     tmpInfo.remove();
   }
 }
-
 
 function scrollToBottom(elementId) {
   var element = document.getElementById(elementId);
@@ -121,7 +125,7 @@ async function joinChatRoom() {
   console.log("join as:", chatName);
   console.log("Room Uuid:", chatRoomUuid);
   const data = new FormData();
-  console.log('data is', data)
+  console.log("data is", data);
   data.append("name", chatName);
   data.append("urls", chatWindowUrl);
 
@@ -139,13 +143,10 @@ async function joinChatRoom() {
       console.log("data", data);
     });
 
-  chatSocket = new WebSocket(
-    `ws://${window.location.host}/ws/${chatRoomUuid}/`
-  );
+  chatSocket = new WebSocket(`ws://${window.location.host}/ws/${chatRoomUuid}/`);
   chatSocket.onmessage = function (e) {
     console.log("WebSocket message received:", e.data);
-    onChatMessage(JSON.parse(e.data))
-    
+    onChatMessage(JSON.parse(e.data));
   };
 
   chatSocket.onopen = function (e) {
@@ -168,6 +169,7 @@ chatOpenElement.onclick = function (e) {
   chatWelcomeElement.classList.remove("hidden");
   return false;
 };
+
 chatJoinElement.onclick = function (e) {
   e.preventDefault();
 
@@ -177,23 +179,27 @@ chatJoinElement.onclick = function (e) {
   joinChatRoom();
 
   return false;
-}
+};
+
 chatSubmitElement.onclick = function (e) {
-  e.preventDefault()
-  sendMessage()
-  return CSSFontFeatureValuesRule
-}
+  e.preventDefault();
+  sendMessage();
+  return false;
+};
+
 chatInputElement.onkeyup = function (e) {
   if (e.keyCode === 13) {
     e.preventDefault();
     sendMessage();
   }
-}
+};
+
 chatInputElement.onfocus = function (e) {
-  chatSocket.send(JSON.stringify({
-    'type' : "update",
-    'message': "writing_active",
-    'name':  chatName,
-    
-  }))
-}
+  chatSocket.send(
+    JSON.stringify({
+      type: "update",
+      message: "writing_active",
+      name: chatName,
+    })
+  );
+};

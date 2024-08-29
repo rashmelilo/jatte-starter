@@ -24,21 +24,20 @@
         {% endif %}
         <div>
             <div
-                class="p-4 rounded-xl{% if message.created_by %}bg-blue-600 text-white{% else %}bg-gray-300{% endif %}">
+                class="p-4 rounded-xl {% if message.created_by %}bg-blue-600 text-white{% else %}bg-gray-300{% endif %}">
                 <p class="text-sm">{{ message.sent_by }}</p>
             </div>
             <span class="text-xs text-gray-500 leading-none">{{ message.created_at|timesince }} ago</span>
         </div>
         {% if message.created_by %}
-        <div class="flex shrink-0 h-10 w-10 rounded-full bg-gray-200 text-center pt-2">
+        <div class="flex-shrink-0 h-10 w-10 rounded-full bg-gray-200 text-center pt-2">
             {{ message.sent_by|initials }} 
         </div>
         {% endif %}
     </div>
     {% endfor %}
-
-
 </div>
+
 {% if room.status == 'active' %}
 <input type="text" name="message" id="chat_message_input" class="w-full mb-4 p-4 rounded-xl bg-gray-100"
     placeholder="Type your message...">
@@ -46,9 +45,10 @@
 {% endif %}
 
 {% endblock %}
+
 {% block scripts %}
 {% if room.status == 'active' %}
-{{ room.uuid|json_script:"room_uuid" }}|
+{{ room.uuid|json_script:"room_uuid" }}
 {{ request.user.name|json_script:"user_name" }}
 {{ request.user.id|json_script:"user_id" }}
 {{ request.user.name|initials|json_script:"user_initials" }}
